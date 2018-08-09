@@ -70,6 +70,18 @@ function removeExamples(schema: any) {
     });
 }
 
+function removeReadOnly(schema: any) {
+  traveseSchema(schema, (childSchema: any) => {
+      if(childSchema.properties) {
+        Object.keys(childSchema.properties).map((key) => {
+            if(childSchema.properties[key].readOnly) {
+                delete childSchema.properties[key];
+            }
+        });
+      }
+  });
+}
+
 export function _fixNullables(schema: any) {
     traveseSchema(schema, (childSchema: any) => {
         if(schema.properties) {
@@ -190,10 +202,14 @@ function generateValidator(
         }
     };
 
+    if(['post', 'put'].includes(schemaContext.path[2])) {
+        removeReadOnly(schema);
+    }
+
     const ajv = new Ajv({
         useDefaults: true,
         coerceTypes: allowTypeCoercion ? 'array' : false,
-        removeAdditional: allowTypeCoercion ? 'failing' : false,
+        removeAdditional: false,
         jsonPointers: true
     });
     addCustomFormats(ajv, customFormats);
