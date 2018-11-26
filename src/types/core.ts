@@ -1,6 +1,7 @@
 import * as http from 'http';
 import * as net from 'net';
 import * as oas3 from 'openapi3-ts';
+import { Context as KoaContext } from 'koa';
 
 import { Callback, ParametersByLocation, ParametersMap, HttpIncomingMessage } from './basicTypes';
 import { Readable } from 'stream';
@@ -152,7 +153,8 @@ export interface HttpResult {
  */
 export type ExegesisRunner = (
     req: http.IncomingMessage,
-    res: http.ServerResponse
+    res: http.ServerResponse,
+    ctx: KoaContext
 ) => Promise<HttpResult | undefined>;
 
 export interface ExegesisPluginInstance {

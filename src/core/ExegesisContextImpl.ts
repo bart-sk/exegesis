@@ -1,6 +1,7 @@
 import * as http from 'http';
 import pb from 'promise-breaker';
 import deepFreeze from 'deep-freeze';
+import { Context as KoaContext } from 'koa';
 import {
     ParametersByLocation,
     ParametersMap,
@@ -37,6 +38,7 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
     readonly origRes: http.ServerResponse;
     readonly res: ExegesisResponseImpl;
     readonly options: ExegesisOptions;
+    readonly koa: KoaContext;
     params: ParametersByLocation<ParametersMap<any>>;
     requestBody: any;
     security?: {[scheme: string]: AuthenticationSuccess};
@@ -52,13 +54,15 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
         req: http.IncomingMessage, // http2.Http2ServerRequest,
         res: http.ServerResponse, // http2.Http2ServerResponse,
         api: T,
-        options: ExegesisOptions
+        options: ExegesisOptions,
+        ctx: KoaContext,
     ) {
         this.req = req as HttpIncomingMessage;
         this.origRes = res;
         this.res = new ExegesisResponseImpl(res);
         this.api = api;
         this.options = options;
+        this.koa = ctx;
 
         // Temporarily set params to EMPTY_PARAMS.  While we're being a
         // 'plugin context', this will be empty, but it will be filled in
