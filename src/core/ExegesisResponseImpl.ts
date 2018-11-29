@@ -37,8 +37,11 @@ export default class ExegesisResponseImpl implements types.ExegesisResponse {
     }
 
     json(json: any) {
+        // TODO: Provide an option to disable this so that we don't have to
+        // stringify the content, then parse it again when we do response
+        // validation.
         this.set('content-type', 'application/json')
-            .setBody(json);
+            .setBody(JSON.stringify(json));
         return this;
     }
 
