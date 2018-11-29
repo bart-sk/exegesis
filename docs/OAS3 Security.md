@@ -74,7 +74,7 @@ If the user provided authentication credentials, but they are invalid,
 the authenticator should return a `{type: 'invalid', challenge, status, message}`
 object.
 
-If a valiator returns `undefined`, this is treated like 'missing'.
+If a authenticator returns `undefined`, this is treated like 'missing'.
 
 When Exegesis routes a request, it will run the relevant authenticators
 and decide whether or not to allow the request.  Note that if an operation has
@@ -196,3 +196,47 @@ If a user authenticated using `basicAuth`, then the controller would have
 access to the object returned by the authenticator via `context.security.basicAuth`.
 Simliarly, if the request used oauth, then `context.security.oauth` would be
 populated with the result of the oauth authenticator.
+
+### Using Multiple Authentication Types
+
+Some REST APIs support several authentication types. The security section lets you combine the security requirements
+using logical OR and AND to achieve the desired result.
+
+While the [Security requirement object section of the Open API Spec](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#security-requirement-object)
+specifies that `only one of Security Requirement Objects in the list needs to be satisfied to authorize the request` this
+library follows the principal of least privilege by **failing authorisation if *any* of the authenticators return an `invalid` result**.
+One side affect of this decision is that all authenticators will run for every request to ensure that there are no invalid results.
+
+#### Scenarios
+
+```yaml
+security:    # A OR B
+  - A
+  - B
+```
+
+* The request will authenticate if **either** `A` or `B` return a `success` result and **none** return an `invalid` result.
+* `A` will run first then `B`
+* The authentication process will return the result of the first successful authenticator.
+* If a authenticator returns an invalid result the authentication process will be halted and the invalid result will be returned.
+
+```yaml
+security:    # A AND B
+  - A
+    B
+```
+
+* The request will authenticate only if **both** `A` and `B` return a `success` result and **none** return an `invalid` result.
+* `A` will run first then `B`
+* The authentication process will return the result of both the successful authenticators.
+* If a authenticator returns an invalid result the authentication process will be halted and the invalid result will be returned.
+
+```yaml
+security:    # (A AND B) OR (C AND D)
+  - A
+    B
+  - C
+    D
+```
+
+* The request will authenticate only if (`A` and `B`) OR (`C` AND `D`) return a success a `success` result and **none** return an `invalid` result.
