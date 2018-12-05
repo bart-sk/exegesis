@@ -1,10 +1,10 @@
 import { JSONSchema4, JSONSchema6 } from 'json-schema';
-import { ParameterLocation, ValidatorFunction, oas3 } from '../types';
+import { oas3, ParameterLocation, ValidatorFunction } from '../types';
 import { extractSchema } from '../utils/jsonSchema';
 import Oas3CompileContext from './Oas3CompileContext';
 import { generateRequestValidator } from './Schema/validators';
 import { isReferenceObject } from './oasUtils';
-import { ParameterParser, generateParser } from './parameterParsers';
+import { generateParser, ParameterParser } from './parameterParsers';
 import * as urlEncodedBodyParser from './urlEncodedBodyParser';
 import { ExgesisCompiledOptions } from '../options';
 
@@ -20,10 +20,12 @@ function getDefaultExplode(style: string) : boolean {
 }
 
 function generateSchemaParser(self: Parameter, schema: JSONSchema4 | JSONSchema6, options: ExgesisCompiledOptions) {
-    const styleInConfig = options.paramStyle && self.oaParameter.in in options.paramStyle && options.paramStyle[self.oaParameter.in];
+    const styleInConfig = options.paramStyle && self.oaParameter.in in options.paramStyle &&
+        options.paramStyle[self.oaParameter.in];
     const style = self.oaParameter.style || styleInConfig || DEFAULT_STYLE[self.oaParameter.in];
 
-    const explodeInConfig = options.paramExplode && self.oaParameter.in in options.paramExplode && options.paramExplode[self.oaParameter.in];
+    const explodeInConfig = options.paramExplode && self.oaParameter.in in options.paramExplode &&
+        options.paramExplode[self.oaParameter.in];
     const explode = (self.oaParameter.explode === null || self.oaParameter.explode === undefined)
         ? explodeInConfig || getDefaultExplode(style)
         : self.oaParameter.explode;
