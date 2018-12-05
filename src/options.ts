@@ -31,6 +31,8 @@ export interface ExgesisCompiledOptions {
     onResponseValidationError: ResponseValidationCallback;
     validateDefaultResponses: boolean;
     allErrors: boolean;
+    paramStyle: {[style: string]: string};
+    paramExplode: {[style: string]: boolean};
 }
 
 const INT_32_MAX = Math.pow(2, 32) - 1;
@@ -136,5 +138,7 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
         onResponseValidationError: options.onResponseValidationError || (() => void 0),
         validateDefaultResponses,
         allErrors: options.allErrors || false,
+        paramStyle: options.paramStyle || {},
+        paramExplode: options.paramExplode || {},
     };
 }

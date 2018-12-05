@@ -150,4 +150,23 @@ export interface ExegesisOptions {
      * processing invalid requests.
      */
     allErrors?: boolean;
+
+    /**
+     * Defaults
+     * path: 'simple',
+     * query: 'form',
+     * cookie: 'form',
+     * header: 'simple'
+     */
+
+    paramStyle?: {[style: string]: string};
+
+    /**
+     * Defaults
+     * path: false',
+     * query: true,
+     * cookie: true,
+     * header: false
+     */
+    paramExplode?: {[style: string]: boolean};
 }

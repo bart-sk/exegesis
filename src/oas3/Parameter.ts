@@ -6,6 +6,7 @@ import { generateRequestValidator } from './Schema/validators';
 import { isReferenceObject } from './oasUtils';
 import { ParameterParser, generateParser } from './parameterParsers';
 import * as urlEncodedBodyParser from './urlEncodedBodyParser';
+import { ExgesisCompiledOptions } from '../options';
 
 const DEFAULT_STYLE : {[style: string]: string} = {
     path: 'simple',
@@ -18,10 +19,13 @@ function getDefaultExplode(style: string) : boolean {
     return style === 'form';
 }
 
-function generateSchemaParser(self: Parameter, schema: JSONSchema4 | JSONSchema6) {
-    const style = self.oaParameter.style || DEFAULT_STYLE[self.oaParameter.in];
+function generateSchemaParser(self: Parameter, schema: JSONSchema4 | JSONSchema6, options: ExgesisCompiledOptions) {
+    const styleInConfig = options.paramStyle && self.oaParameter.in in options.paramStyle && options.paramStyle[self.oaParameter.in];
+    const style = self.oaParameter.style || styleInConfig || DEFAULT_STYLE[self.oaParameter.in];
+
+    const explodeInConfig = options.paramExplode && self.oaParameter.in in options.paramExplode && options.paramExplode[self.oaParameter.in];
     const explode = (self.oaParameter.explode === null || self.oaParameter.explode === undefined)
-        ? getDefaultExplode(style)
+        ? explodeInConfig || getDefaultExplode(style)
         : self.oaParameter.explode;
     const allowReserved = self.oaParameter.allowReserved || false;
 
@@ -72,7 +76,7 @@ export default class Parameter {
                 schemaContext.jsonPointer,
                 {resolveRef: context.resolveRef.bind(context)}
             );
-            this.parser = generateSchemaParser(this, schema);
+            this.parser = generateSchemaParser(this, schema, context.options);
             this.validate = generateRequestValidator(schemaContext, this.location, resOaParameter.required || false);
 
         } else if(resOaParameter.content) {
