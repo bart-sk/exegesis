@@ -26,7 +26,7 @@ import { EXEGESIS_CONTROLLER, EXEGESIS_OPERATION_ID } from './extensions';
 import Responses from './Responses';
 import SecuritySchemes from './SecuritySchemes';
 
-const METHODS_WITH_BODY = ['post', 'put'];
+const METHODS_WITH_BODY = ['post', 'put', 'patch'];
 
 function isAuthenticationFailure(result : any) : result is AuthenticationFailure {
     return !!(result.type === 'invalid' || result.type === 'missing');
@@ -368,10 +368,9 @@ export default class Operation {
             // No auth required
             return {};
         }
-
-        let firstFailure: AuthenticationFailure | undefined;
+        let firstFailureResult: AuthenticationFailure | undefined;
         const challenges: {[schemeName: string]: string | undefined} = {};
-        let result: Dictionary<AuthenticationSuccess> | undefined;
+        let firstAuthenticatedResult: Dictionary<AuthenticationSuccess> | undefined;
 
         const triedSchemes : Dictionary<AuthenticationSuccess> = Object.create(null);
 
@@ -385,7 +384,7 @@ export default class Operation {
             if(!securityRequirementResult) {
                 break;
             } else if(securityRequirementResult.type === 'authenticated') {
-                result = securityRequirementResult.result;
+                firstAuthenticatedResult = firstAuthenticatedResult || securityRequirementResult.result;
             } else if(
                 securityRequirementResult.type === 'missing' ||
                 securityRequirementResult.type === 'invalid'
@@ -395,11 +394,10 @@ export default class Operation {
                 // No luck with this security requirement.
                 if(failure.status === 401 && failure.challenge) {
                     challenges[securityRequirementResult.failedSchemeName!] = failure.challenge;
-                } else if(failure.status !== 401 && !firstFailure) {
-                    firstFailure = failure;
                 }
+
                 if(securityRequirementResult.type === 'invalid') {
-                    // Hard failure - don't try anything else.
+                    firstFailureResult = firstFailureResult || failure;
                     break;
                 }
             } else {
@@ -407,15 +405,15 @@ export default class Operation {
                 throw new Error("Invalid result from `_checkSecurityRequirement()`");
             }
 
-            if(result || exegesisContext.isResponseFinished()) {
+            if(exegesisContext.isResponseFinished()) {
                 // We're done!
                 break;
             }
         }
 
-        if(result) {
+        if(firstAuthenticatedResult && !firstFailureResult) {
             // Successs!
-            return result;
+            return firstAuthenticatedResult;
 
         } else if(exegesisContext.isResponseFinished()) {
             // Someone already wrote a response.
@@ -437,11 +435,11 @@ export default class Operation {
                 .filter<string | undefined>(challenge => challenge !== undefined)
                 .value() as string[];
 
-            const message = (firstFailure && firstFailure.message) ||
+            const message = (firstFailureResult && firstFailureResult.message) ||
                 `Must authenticate using one of the following schemes: ${authSchemes.join(', ')}.`;
 
             exegesisContext.res
-                .setStatus((firstFailure && firstFailure.status) || 401)
+                .setStatus((firstFailureResult && firstFailureResult.status) || 401)
                 .set('WWW-Authenticate', authChallenges)
                 .setBody({message});
 

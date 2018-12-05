@@ -16,6 +16,7 @@ import {
     MimeTypeParser,
     ResponseValidationCallback
 } from './types';
+import {handleErrorFunction} from "./types/options";
 
 export interface ExgesisCompiledOptions {
     customFormats: CustomFormats;
@@ -26,9 +27,10 @@ export interface ExgesisCompiledOptions {
     defaultMaxBodySize: number;
     ignoreServers: boolean;
     allowMissingControllers: boolean;
-    autoHandleHttpErrors: boolean;
+    autoHandleHttpErrors: boolean | handleErrorFunction;
     onResponseValidationError: ResponseValidationCallback;
     validateDefaultResponses: boolean;
+    allErrors: boolean;
 }
 
 const INT_32_MAX = Math.pow(2, 32) - 1;
@@ -48,6 +50,10 @@ const defaultValidators : CustomFormats = {
         validate: (value: number) => value >= 0 && value <= INT_64_MAX
     },
     double: {
+        type: 'number',
+        validate: () => true
+    },
+    float: {
         type: 'number',
         validate: () => true
     },
@@ -106,9 +112,14 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
 
     const authenticators : Authenticators = options.authenticators || {};
 
-    const autoHandleHttpErrors = options.autoHandleHttpErrors !== undefined
-        ? !!options.autoHandleHttpErrors
-        : true;
+    let autoHandleHttpErrors: boolean | handleErrorFunction = true;
+    if (options.autoHandleHttpErrors !== undefined) {
+        if (options.autoHandleHttpErrors instanceof Function) {
+            autoHandleHttpErrors = options.autoHandleHttpErrors;
+        } else {
+            autoHandleHttpErrors = !!options.autoHandleHttpErrors;
+        }
+    }
 
     const validateDefaultResponses = 'validateDefaultResponses' in options ? !!options.validateDefaultResponses : true;
 
@@ -123,6 +134,7 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
         allowMissingControllers,
         autoHandleHttpErrors,
         onResponseValidationError: options.onResponseValidationError || (() => void 0),
-        validateDefaultResponses
+        validateDefaultResponses,
+        allErrors: options.allErrors || false,
     };
 }

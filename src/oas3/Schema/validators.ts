@@ -6,7 +6,6 @@ import * as jsonSchema from '../../utils/jsonSchema';
 import Oas3CompileContext from '../Oas3CompileContext';
 
 // TODO tests
-// * nullable
 // * readOnly
 // * readOnly with additionalProperties and value supplied
 // * readOnly not supplied but required
@@ -152,7 +151,8 @@ function doValidate(
                         name: parameterLocation.name,
                         docPath: schemaPtr,
                         path: pathPtr
-                    }
+                    },
+                    ajvError: err
                 };
             });
         }
@@ -194,7 +194,9 @@ function generateValidator(
         useDefaults: true,
         coerceTypes: allowTypeCoercion ? 'array' : false,
         removeAdditional: allowTypeCoercion ? 'failing' : false,
-        jsonPointers: true
+        jsonPointers: true,
+        nullable: true,
+        allErrors: schemaContext.options.allErrors,
     });
     addCustomFormats(ajv, customFormats);
     const validate = ajv.compile(schema);

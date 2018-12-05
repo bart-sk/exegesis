@@ -13,6 +13,10 @@ const openApiDoc : oas3.OpenAPIObject = Object.assign(
                 number: {
                     type: 'number'
                 },
+                float: {
+                    type: 'number',
+                    format: 'float'
+                },
                 int32: {
                     type: 'integer',
                     format: 'int32'
@@ -37,6 +41,28 @@ const openApiDoc : oas3.OpenAPIObject = Object.assign(
                         a: {type: 'number'}
                     }
                 },
+                object3: {
+                    type: 'object',
+                    required: ['a', 'b'],
+                    properties: {
+                        a: {
+                            type: 'string',
+                        },
+                        b: {
+                            type: 'string',
+                        }
+                    }
+                },
+                aNullableObject: {
+                    type: 'object',
+                    required: ['a'],
+                    nullable: true,
+                    properties: {
+                        a: {
+                            type: 'string',
+                        }
+                    }
+                },
                 withDefault: {
                     type: 'object',
                     properties: {
@@ -46,7 +72,7 @@ const openApiDoc : oas3.OpenAPIObject = Object.assign(
                 numberWithDefault: {
                     type: 'number',
                     default: 7
-                }
+                },
             }
         }
     }
@@ -78,6 +104,15 @@ describe('schema validators', function() {
                 name: 'foo',
                 docPath: '/components/schemas/number',
                 path: ''
+            },
+            ajvError: {
+                dataPath: '/value',
+                keyword: 'type',
+                message: 'should be number',
+                params: {
+                    type: 'number',
+                },
+                schemaPath: '#/properties/value/type',
             }
         }]);
     });
@@ -96,6 +131,15 @@ describe('schema validators', function() {
                 name: 'body',
                 docPath: '/components/schemas/object',
                 path: ''
+            },
+            ajvError: {
+                dataPath: '/value',
+                keyword: 'required',
+                message: 'should have required property \'b\'',
+                params: {
+                    missingProperty: 'b',
+                },
+                schemaPath: '#/properties/value/required',
             }
         }]);
     });
@@ -114,6 +158,15 @@ describe('schema validators', function() {
                 name: 'body',
                 docPath: '/components/schemas/object',
                 path: ''
+            },
+            ajvError: {
+                dataPath: '/value',
+                keyword: 'required',
+                message: 'should have required property \'a\'',
+                params: {
+                    missingProperty: 'a',
+                },
+                schemaPath: '#/properties/value/required',
             }
         }]);
     });
@@ -130,6 +183,15 @@ describe('schema validators', function() {
                 name: 'body',
                 docPath: '/components/schemas/object2',
                 path: '/a'
+            },
+            ajvError: {
+                dataPath: '/value/a',
+                keyword: 'type',
+                message: 'should be number',
+                params: {
+                    type: 'number',
+                },
+                schemaPath: '#/properties/value/properties/a/type',
             }
         }]);
     });
@@ -147,8 +209,24 @@ describe('schema validators', function() {
                 name: 'foo',
                 docPath: '/components/schemas/int32',
                 path: ''
+            },
+            ajvError: {
+                dataPath: '/value',
+                keyword: 'format',
+                message: 'should match format "int32"',
+                params: {
+                    format: 'int32',
+                },
+                schemaPath: '#/properties/value/format',
             }
         }]);
+    });
+
+    it('should validate a float', function() {
+        const context = makeContext(openApiDoc, '#/components/schemas/float');
+
+        const validator = validators.generateRequestValidator(context, QUERY_PARAM_LOCATION, false);
+        expect(validator(7.5).errors).to.eql(null);
     });
 
     it('should error for a missing value if required', function() {
@@ -174,6 +252,15 @@ describe('schema validators', function() {
         const validator = validators.generateRequestValidator(context, QUERY_PARAM_LOCATION, false);
 
         expect(validator(7).errors).to.eql(null);
+        expect(validator(undefined).errors).to.eql(null);
+    });
+
+    it('should not error for a missing object if nullable', function() {
+        const context = makeContext(openApiDoc, '#/components/schemas/aNullableObject');
+
+        const validator = validators.generateRequestValidator(context, QUERY_PARAM_LOCATION, false);
+
+        expect(validator(null).errors).to.eql(null);
         expect(validator(undefined).errors).to.eql(null);
     });
 
@@ -203,6 +290,88 @@ describe('schema validators', function() {
             value: 7
         });
 
+    });
+
+    it('only return the first error if options.allErrors is false', function() {
+        const context = makeContext(openApiDoc, '#/components/schemas/object3');
+
+        const validator = validators.generateRequestValidator(context, REQUEST_BODY_LOCATION, false);
+
+        const obj : any = {};
+        expect(validator(obj)).to.eql({
+            errors: [
+                {
+                    ajvError: {
+                        dataPath: '/value',
+                        keyword: 'required',
+                        message: 'should have required property \'a\'',
+                        params: {
+                            missingProperty: 'a',
+                        },
+                        schemaPath: '#/properties/value/required',
+                    },
+                    location: {
+                        docPath: '/components/schemas/object3',
+                        in: 'request',
+                        name: 'body',
+                        path: ''
+                    },
+                    message: 'should have required property \'a\'',
+                }
+            ],
+            value: {}
+        });
+    });
+
+    it('return multiple errors if options.allErrors is true', function() {
+        const context = makeContext(openApiDoc, '#/components/schemas/object3', {
+            allErrors: true
+        });
+
+        const validator = validators.generateRequestValidator(context, REQUEST_BODY_LOCATION, false);
+
+        const obj : any = {};
+        expect(validator(obj)).to.eql({
+            errors: [
+                {
+                    ajvError: {
+                        dataPath: '/value',
+                        keyword: 'required',
+                        message: 'should have required property \'a\'',
+                        params: {
+                            missingProperty: 'a',
+                        },
+                        schemaPath: '#/properties/value/required',
+                    },
+                    location: {
+                        docPath: '/components/schemas/object3',
+                        in: 'request',
+                        name: 'body',
+                        path: ''
+                    },
+                    message: 'should have required property \'a\'',
+                },
+                {
+                    ajvError: {
+                        dataPath: '/value',
+                        keyword: 'required',
+                        message: 'should have required property \'b\'',
+                        params: {
+                            missingProperty: 'b',
+                        },
+                        schemaPath: '#/properties/value/required',
+                    },
+                    location: {
+                        docPath: '/components/schemas/object3',
+                        in: 'request',
+                        name: 'body',
+                        path: ''
+                    },
+                    message: 'should have required property \'b\'',
+                }
+            ],
+            value: {}
+        });
     });
 
 });
