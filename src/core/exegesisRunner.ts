@@ -1,5 +1,6 @@
 import * as http from 'http';
 import { Readable } from 'stream';
+import { Context as KoaContext } from 'koa';
 
 import { invokeController } from '../controllers/invoke';
 import stringToStream from '../utils/stringToStream';
@@ -127,7 +128,8 @@ export default async function generateExegesisRunner<T>(
 
     return async function exegesisRunner(
         req: http.IncomingMessage,
-        res: http.ServerResponse
+        res: http.ServerResponse,
+        ctx: KoaContext,
     ) : Promise<HttpResult | undefined> {
         const method = req.method || 'get';
         const url = req.url || '/';
@@ -141,7 +143,7 @@ export default async function generateExegesisRunner<T>(
                 return result;
             }
 
-            const context = new ExegesisContextImpl<T>(req, res, resolved.api, options.originalOptions);
+            const context = new ExegesisContextImpl<T>(req, res, resolved.api, options.originalOptions, ctx);
 
             if(!context.isResponseFinished()) {
                 await plugins.postRouting(context);
