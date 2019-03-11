@@ -27,7 +27,7 @@ function generateSchemaParser(self: Parameter, schema: JSONSchema4 | JSONSchema6
     const explodeInConfig = options.paramExplode && self.oaParameter.in in options.paramExplode &&
         options.paramExplode[self.oaParameter.in];
     const explode = (self.oaParameter.explode === null || self.oaParameter.explode === undefined)
-        ? explodeInConfig || getDefaultExplode(style)
+        ? typeof explodeInConfig === 'boolean' ? explodeInConfig : getDefaultExplode(style)
         : self.oaParameter.explode;
     const allowReserved = self.oaParameter.allowReserved || false;
 
