@@ -432,7 +432,7 @@ export default class Operation {
                 .map((schemeName: string) =>
                     challenges[schemeName] || this._securitySchemes.getChallenge(schemeName)
                 )
-                .filter<string | undefined>(challenge => challenge !== undefined)
+                .filter(challenge => challenge !== undefined)
                 .value() as string[];
 
             const message = (firstFailureResult && firstFailureResult.message) ||
