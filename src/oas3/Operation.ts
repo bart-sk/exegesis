@@ -427,7 +427,7 @@ export default class Operation {
                 });
 
             const authChallenges = ld(this.securityRequirements)
-                .map<any, string[]>((requirement: any) : string[] => Object.keys(requirement))
+                .map((requirement: any) : string[] => Object.keys(requirement))
                 .flatten()
                 .map<string, string | undefined>((schemeName: string) =>
                     challenges[schemeName] || this._securitySchemes.getChallenge(schemeName)
