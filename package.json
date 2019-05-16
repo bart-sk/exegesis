@@ -10,7 +10,7 @@
   "scripts": {
     "test": "npm run build && npm run lint && npm run test:unittest",
     "test:pre-commit": "npm run build && npm run lint && npm run test:unittest-pc",
-    "build": "tsc",
+    "build": "tsc -v && npx tsc -v && npx tsc",
     "clean": "rm -rf lib coverage",
     "test:unittest": "tsc -p test && nyc mocha 'test/**/*.@(ts|js)'",
     "test:unittest-pc": "tsc -p test && mocha --reporter progress 'test/**/*.@(ts|js)'",
@@ -73,7 +73,7 @@
     "supertest-fetch": "^1.2.2",
     "ts-node": "^7.0.0",
     "tslint": "^5.10.0",
-    "typescript": "^3.2.0"
+    "typescript": "^3.4.5"
   },
   "dependencies": {
     "ajv": "^6.6.1",
