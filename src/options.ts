@@ -84,7 +84,7 @@ export function compileOptions(options: ExegesisOptions = {}) : ExgesisCompiledO
         options.mimeTypeParsers || {}
     );
 
-    const wrappedBodyParsers = ld.mapValues<MimeTypeParser, BodyParser | undefined>(
+    const wrappedBodyParsers = ld.mapValues<any, BodyParser | undefined>(
         mimeTypeParsers, (p: MimeTypeParser) => {
             if(p.parseReq) {
                 return p;
