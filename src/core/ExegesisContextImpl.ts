@@ -45,6 +45,7 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
     user: any | undefined;
     api: T;
     parameterLocations: ParameterLocations = EMPTY_PARAM_LOCATIONS;
+    files: any;
 
     private _operation: ResolvedOperation | undefined;
     private _paramsResolved: boolean = false;
@@ -127,6 +128,7 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
                         this._operation!.bodyParser!.parseReq(this.req, this.origRes, done)
                     );
                     body = body || this.req.body;
+                    console.log(body);
                 }
 
                 // Validate the body.  We need to validate the body even if we
