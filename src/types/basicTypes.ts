@@ -41,5 +41,4 @@ export interface ParametersMap<T> {
 
 export interface HttpIncomingMessage extends http.IncomingMessage {
   body?: any;
-  files?: any;
 }

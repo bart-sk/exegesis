@@ -45,7 +45,6 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
     user: any | undefined;
     api: T;
     parameterLocations: ParameterLocations = EMPTY_PARAM_LOCATIONS;
-    files: any;
 
     private _operation: ResolvedOperation | undefined;
     private _paramsResolved: boolean = false;
