@@ -1,9 +1,9 @@
 import http from 'http';
 import {IncomingForm} from 'formidable';
 
-import { MimeTypeParser, Callback } from "../types";
+import {Callback, BodyParser} from "../types";
 
-export default class MultiPartFormDataParser implements MimeTypeParser {
+export default class MultiPartFormDataParser implements BodyParser {
     private _bodyParserMiddlware : any;
 
     constructor(
