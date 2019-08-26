@@ -1,5 +1,5 @@
 {
-  "name": "exegesis",
+  "name": "exegesis-koa",
   "version": "0.0.0-semantic-release",
   "description": "Parses OpenAPI documents",
   "main": "lib/index.js",

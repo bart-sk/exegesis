@@ -6,7 +6,7 @@ import { generateRequestValidator } from './Schema/validators';
 import { isReferenceObject } from './oasUtils';
 import { ParameterParser, generateParser } from './parameterParsers';
 import * as urlEncodedBodyParser from './urlEncodedBodyParser';
-import { ExgesisCompiledOptions } from '../options';
+import { ExegesisCompiledOptions } from '../options';
 
 const DEFAULT_STYLE : {[style: string]: string} = {
     path: 'simple',
@@ -19,7 +19,7 @@ function getDefaultExplode(style: string) : boolean {
     return style === 'form';
 }
 
-function generateSchemaParser(self: Parameter, schema: JSONSchema4 | JSONSchema6, options: ExgesisCompiledOptions) {
+function generateSchemaParser(self: Parameter, schema: JSONSchema4 | JSONSchema6, options: ExegesisCompiledOptions) {
     const styleInConfig = options.paramStyle && self.oaParameter.in in options.paramStyle &&
         options.paramStyle[self.oaParameter.in];
     const style = self.oaParameter.style || styleInConfig || DEFAULT_STYLE[self.oaParameter.in];

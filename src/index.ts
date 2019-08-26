@@ -8,13 +8,15 @@ import { compileOptions } from "./options";
 import { compile as compileOpenApi } from "./oas3";
 import generateExegesisRunner from "./core/exegesisRunner";
 import {
-  ExegesisOptions,
-  Callback,
-  ExegesisRunner,
-  HttpResult,
-  MiddlewareFunction
-  // HttpIncomingMessage
-} from "./types";
+    ApiInterface,
+    ExegesisOptions,
+    Callback,
+    ExegesisRunner,
+    HttpResult,
+    // HttpIncomingMessage,
+    MiddlewareFunction,
+    OAS3ApiInfo
+} from './types';
 export { HttpError, ValidationError } from "./errors";
 import { OpenAPIObject } from "openapi3-ts";
 import { Context as KoaContext } from "koa";
@@ -221,7 +223,7 @@ export function compileApi(
 
     return async function exegesisMiddleware(
       ctx: KoaContext,
-      next: Callback<void>
+      next?: Callback<void>
     ) {
       try {
         const result = await runner(ctx.req, ctx.res, ctx);
