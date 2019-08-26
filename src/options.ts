@@ -17,6 +17,7 @@ import {
     ResponseValidationCallback,
 } from './types';
 import { handleErrorFunction } from './types/options';
+import MultiPartFormDataParser from "./bodyParsers/MultiPartFormDataParser";
 
 export interface ExegesisCompiledOptions {
     customFormats: CustomFormats;
@@ -80,6 +81,7 @@ export function compileOptions(options: ExegesisOptions = {}): ExegesisCompiledO
         {
             'text/*': new TextBodyParser(maxBodySize),
             'application/json': new JsonBodyParser(maxBodySize),
+            'multipart/form-data': new MultiPartFormDataParser(),
         },
         options.mimeTypeParsers || {}
     );

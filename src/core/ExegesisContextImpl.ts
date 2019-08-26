@@ -128,7 +128,6 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
                     );
                     body = body || this.req.body;
                 }
-
                 // Validate the body.  We need to validate the body even if we
                 // didn't parse a body, since this is where we check if the
                 // body is required.
