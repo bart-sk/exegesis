@@ -1,10 +1,10 @@
 import { JSONSchema4, JSONSchema6 } from 'json-schema';
-import { oas3, ParameterLocation, ValidatorFunction } from '../types';
+import { ParameterLocation, ValidatorFunction, oas3 } from '../types';
 import { extractSchema } from '../utils/jsonSchema';
 import Oas3CompileContext from './Oas3CompileContext';
 import { generateRequestValidator } from './Schema/validators';
 import { isReferenceObject } from './oasUtils';
-import { generateParser, ParameterParser } from './parameterParsers';
+import { ParameterParser, generateParser } from './parameterParsers';
 import * as urlEncodedBodyParser from './urlEncodedBodyParser';
 import { ExgesisCompiledOptions } from '../options';
 
@@ -79,7 +79,12 @@ export default class Parameter {
                 {resolveRef: context.resolveRef.bind(context)}
             );
             this.parser = generateSchemaParser(this, schema, context.options);
-            this.validate = generateRequestValidator(schemaContext, this.location, resOaParameter.required || false);
+            this.validate = generateRequestValidator(
+                schemaContext,
+                this.location,
+                resOaParameter.required || false,
+                'application/x-www-form-urlencoded'
+            );
 
         } else if(resOaParameter.content) {
             // `parameter.content` must have exactly one key
@@ -113,7 +118,8 @@ export default class Parameter {
                 this.validate = generateRequestValidator(
                     mediaTypeContext.childContext('schema'),
                     this.location,
-                    resOaParameter.required || false
+                    resOaParameter.required || false,
+                    mediaTypeString
                 );
             }
         } else {

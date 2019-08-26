@@ -1,0 +1,150 @@
+openapi: "3.0.1"
+info:
+  version: 1.0.0
+  title: Exegesis Integration Test
+  license:
+    name: MIT
+paths:
+  /greet:
+    get:
+      summary: List all pets
+      x-exegesis-controller: greetController
+      operationId: greetGet
+      parameters:
+        - name: name
+          in: query
+          description: Name of user to greet
+          required: true
+          schema:
+            type: string
+            minLength: 2
+      responses:
+        '200':
+          description: Greet message.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - greeting
+                properties:
+                  greeting: {type: string}
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /malformedResponse:
+    get:
+      x-exegesis-controller: malformed
+      operationId: getBadResponse
+      responses:
+        '200':
+          description: Greet message.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - greeting
+                properties:
+                  greeting: {type: string}
+  /secure:
+    get:
+      summary: A secure operation
+      x-exegesis-controller: secureController
+      operationId: secureGet
+      security:
+        - sessionKey: []
+      responses:
+        '200':
+          description: Greet message.
+          content:
+            application/json:
+              schema: {type: 'object'}
+  /status/setStatus:
+    get:
+      summary: Test `res.setStatus`
+      x-exegesis-controller: statusController
+      operationId: setStatus
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {type: 'object'}
+  /status/status:
+    get:
+      summary: Test `res.status`
+      x-exegesis-controller: statusController
+      operationId: status
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {type: 'object'}
+  /postWithDefault:
+    post:
+      summary: An operation with a default body
+      x-exegesis-controller: postWithDefault
+      operationId: postWithDefault
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+              default:
+                name: Tim
+      responses:
+        '200':
+          description: Greet message.
+          content:
+            application/json:
+              schema: {type: 'object'}
+  /wwwFormUrlencoded:
+    post:
+      summary: Post with application/x-www-form-urlencoded
+      x-exegesis-controller: echoController.ts
+      x-exegesis-operationId: echo
+      requestBody:
+        required: true
+        content:
+          "application/x-www-form-urlencoded":
+            schema:
+              type: object
+              properties:
+                arr:
+                  type: array
+                  items:
+                    type: string
+                other:
+                  type: string
+            encoding:
+              arr:
+                style: form
+                explode: false
+      responses:
+        '200':
+          description: Respond
+          content:
+            'application/json':
+              schema: {type: 'object'}
+
+components:
+  securitySchemes:
+    sessionKey:
+      type: 'apiKey'
+      name: 'session'
+      in: 'header'
+  schemas:
+    Error:
+      required:
+        - message
+      properties:
+        message: {type: string}

@@ -13,6 +13,7 @@
 - [autoHandleHttpErrors](#autohandlehttperrors)
 - [onResponseValidationError](#onresponsevalidationerror)
 - [validateDefaultResponses](#validatedefaultresponses)
+- [allErrors](#allErrors)
 
 <!-- /TOC -->
 <!-- markdownlint-enable MD007 -->
@@ -118,7 +119,7 @@ still be used for parsing request bodies.
 ## defaultMaxBodySize
 
 If a `MimeTypeParser` provided in `mimeTypeParsers` does not support
-`parseReq()`, this defines the maximum size of a body that will be parsed.
+`parseReq()`, this defines the maximum size (in bytes) of a body that will be parsed.
 Bodies longer than this will result in a "413 - Payload Too Large" error.
 Built in body parsers will also respect this option.
 
@@ -194,3 +195,10 @@ status code).  If this is set to true, then all responses will be validated.
 
 This option is ignored if `onResponseValidationError` is not set.  If
 `onResponseValidationError` is set, the default is true.
+
+## allErrors
+
+If set, then when encountering a validation error Exegesis will return
+all errors found in the document, instead of just the first error.  This
+causes Exegesis to spend more time on requests with errors in them, so
+for performance reasons this is disabled by default.
