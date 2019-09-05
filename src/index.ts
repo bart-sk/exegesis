@@ -8,13 +8,15 @@ import { compileOptions } from "./options";
 import { compile as compileOpenApi } from "./oas3";
 import generateExegesisRunner from "./core/exegesisRunner";
 import {
-  ExegesisOptions,
-  Callback,
-  ExegesisRunner,
-  HttpResult,
-  MiddlewareFunction
-  // HttpIncomingMessage
-} from "./types";
+    ApiInterface,
+    ExegesisOptions,
+    Callback,
+    ExegesisRunner,
+    HttpResult,
+    // HttpIncomingMessage,
+    MiddlewareFunction,
+    OAS3ApiInfo
+} from './types';
 export { HttpError, ValidationError } from "./errors";
 import { OpenAPIObject } from "openapi3-ts";
 import { Context as KoaContext } from "koa";
@@ -37,6 +39,57 @@ function bundle(openApiDocFile: string | object): Promise<object> {
   });
 }
 
+async function compileDependencies(
+    openApiDoc: string | oas3.OpenAPIObject,
+    options: ExegesisOptions,
+) {
+    const compiledOptions = compileOptions(options);
+    const bundledDoc = await bundle(openApiDoc);
+
+    const plugins = new PluginsManager(bundledDoc, (options || {}).plugins || []);
+
+    await plugins.preCompile({ apiDoc: bundledDoc, options });
+
+    const apiInterface = await compileOpenApi(bundledDoc as OpenAPIObject, compiledOptions);
+
+    return { compiledOptions, apiInterface, plugins };
+}
+
+/**
+ * Compiles an API interface for the given openApiDoc using the options.
+ * @param openApiDoc - A string, representing a path to the OpenAPI document,
+ *   or a JSON object.
+ * @param options - Options.  See docs/options.md
+ * @returns - a Promise which returns the compiled API interface
+ */
+export function compileApiInterface(
+    openApiDoc: string | oas3.OpenAPIObject,
+    options: ExegesisOptions,
+): Promise<ApiInterface<OAS3ApiInfo>>;
+
+/**
+ * Compiles an API interface for the given openApiDoc using the options.
+ * @param openApiDoc - A string, representing a path to the OpenAPI document,
+ *   or a JSON object.
+ * @param options - Options.  See docs/options.md
+ * @param done Callback which returns the compiled API interface
+ */
+export function compileApiInterface(
+    openApiDoc: string | oas3.OpenAPIObject,
+    options: ExegesisOptions,
+    done: Callback<ApiInterface<OAS3ApiInfo>>
+): void;
+
+export function compileApiInterface(
+    openApiDoc: string | oas3.OpenAPIObject,
+    options: ExegesisOptions,
+    done?: Callback<ApiInterface<OAS3ApiInfo>>,
+) {
+    return pb.addCallback(done, async () => {
+        return (await compileDependencies(openApiDoc, options)).apiInterface;
+    });
+}
+
 /**
  * Returns a "runner" function - call `runner(req, res)` to get back a
  * `HttpResult` object.
@@ -49,9 +102,9 @@ function bundle(openApiDocFile: string | object): Promise<object> {
  *   `HttpResult`, or `undefined` if the request could not be handled.
  */
 export function compileRunner(
-  openApiDoc: string | oas3.OpenAPIObject,
-  options?: ExegesisOptions
-): Promise<ExegesisRunner>;
+    openApiDoc: string | oas3.OpenAPIObject,
+    options?: ExegesisOptions
+) : Promise<ExegesisRunner>;
 
 /**
  * Returns a "runner" function - call `runner(req, res)` to get back a
@@ -65,42 +118,28 @@ export function compileRunner(
  *   `HttpResult`, or `undefined` if the request could not be handled.
  */
 export function compileRunner(
-  openApiDoc: string | oas3.OpenAPIObject,
-  options: ExegesisOptions | undefined,
-  done: Callback<ExegesisRunner>
-): void;
+    openApiDoc: string | oas3.OpenAPIObject,
+    options: ExegesisOptions | undefined,
+    done: Callback<ExegesisRunner>
+) : void;
 
 export function compileRunner(
-  openApiDoc: string | oas3.OpenAPIObject,
-  options?: ExegesisOptions,
-  done?: Callback<ExegesisRunner>
+    openApiDoc: string | oas3.OpenAPIObject,
+    options?: ExegesisOptions,
+    done?: Callback<ExegesisRunner>
 ) {
-  return pb.addCallback(done, async () => {
-    options = options || {};
+    return pb.addCallback(done, async () => {
+        options = options || {};
+        const { compiledOptions, apiInterface, plugins } = await compileDependencies(openApiDoc, options);
+        return generateExegesisRunner(apiInterface, {
+            autoHandleHttpErrors: compiledOptions.autoHandleHttpErrors,
+            plugins,
+            onResponseValidationError: compiledOptions.onResponseValidationError,
+            validateDefaultResponses: compiledOptions.validateDefaultResponses,
+            originalOptions: options
+        });
 
-    const compiledOptions = compileOptions(options);
-    const bundledDoc = await bundle(openApiDoc);
-
-    const plugins = new PluginsManager(
-      bundledDoc,
-      (options || {}).plugins || []
-    );
-
-    await plugins.preCompile({ apiDoc: bundledDoc, options });
-
-    const apiInterface = await compileOpenApi(
-      bundledDoc as OpenAPIObject,
-      compiledOptions
-    );
-
-    return generateExegesisRunner(apiInterface, {
-      autoHandleHttpErrors: compiledOptions.autoHandleHttpErrors,
-      plugins,
-      onResponseValidationError: compiledOptions.onResponseValidationError,
-      validateDefaultResponses: compiledOptions.validateDefaultResponses,
-      originalOptions: options
     });
-  });
 }
 
 /**
@@ -184,7 +223,7 @@ export function compileApi(
 
     return async function exegesisMiddleware(
       ctx: KoaContext,
-      next: Callback<void>
+      next?: Callback<void>
     ) {
       try {
         const result = await runner(ctx.req, ctx.res, ctx);

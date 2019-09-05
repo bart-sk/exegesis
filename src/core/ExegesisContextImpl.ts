@@ -12,11 +12,11 @@ import {
     Callback,
     ParameterLocations,
     ParameterLocation,
-    ExegesisOptions
+    ExegesisOptions,
+    ResolvedOperation
 } from '../types';
 import ExegesisResponseImpl from './ExegesisResponseImpl';
 import { HttpError, ValidationError } from '../errors';
-import { ResolvedOperation } from '../types/internal';
 
 const EMPTY_PARAMS = deepFreeze({
     query: Object.create(null),
@@ -128,7 +128,6 @@ export default class ExegesisContextImpl<T> implements ExegesisContext, Exegesis
                     );
                     body = body || this.req.body;
                 }
-
                 // Validate the body.  We need to validate the body even if we
                 // didn't parse a body, since this is where we check if the
                 // body is required.
