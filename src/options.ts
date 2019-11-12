@@ -91,7 +91,7 @@ export function compileOptions(options: ExegesisOptions = {}): ExegesisCompiledO
         (p: StringParser | BodyParser | MimeTypeParser) => {
             if ('parseReq' in p) {
                 return p;
-            } else if (p.parseString) {
+            } else if (typeof p.parseString !== 'undefined') {
                 return new BodyParserWrapper(p, maxBodySize);
             } else {
                 return undefined;
