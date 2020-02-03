@@ -25,16 +25,24 @@ export function getSimpleStringParser(
 
 // This is for the case where the result is only allowed to be a string.
 export function simpleStringParser(value: string | undefined) : string | string[] | undefined {
-    return !value
-        ? value
-        : decodeURIComponent(value);
+    try{
+        return !value
+          ? value
+          : decodeURIComponent(value);
+    } catch (e) {
+        return  value;
+    }
 }
 
 // This is for the case where the result allowed to be a string or an array.
 export function simpleArrayParser(value: string | undefined) : string[] | undefined {
-    return (value === undefined || value === null)
-        ? value
-        : value.split(',').map(decodeURIComponent);
+    try {
+        return (value === undefined || value === null)
+          ? value
+          : value.split(',').map(decodeURIComponent);
+    } catch (e) {
+        return value ? [value] : undefined;
+    }
 }
 
 export function simpleStringArrayParser(value: string | undefined) : string | string[] | undefined {
