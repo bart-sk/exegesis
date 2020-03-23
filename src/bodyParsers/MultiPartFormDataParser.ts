@@ -1,7 +1,6 @@
 import { IncomingForm } from 'formidable';
 import http from 'http';
-import { BodyParser, Callback } from "../types";
-
+import { BodyParser, Callback } from '../types';
 
 export default class MultiPartFormDataParser implements BodyParser {
     parseReq(req: http.IncomingMessage, _res: http.ServerResponse, done: Callback<void>): void {
@@ -10,7 +9,7 @@ export default class MultiPartFormDataParser implements BodyParser {
             if (_err) {
                 return done(_err);
             }
-            return done(null, files);
+            return done(null, { ...files, ..._fields });
         });
     }
 }
