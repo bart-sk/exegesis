@@ -1,4 +1,5 @@
 import ld from 'lodash';
+import os from 'os';
 
 import { MimeTypeRegistry } from './utils/mime';
 import TextBodyParser from './bodyParsers/TextBodyParser';
@@ -17,7 +18,7 @@ import {
     ResponseValidationCallback,
 } from './types';
 import { handleErrorFunction } from './types/options';
-import MultiPartFormDataParser from "./bodyParsers/MultiPartFormDataParser";
+import MultiPartFormDataParser from './bodyParsers/MultiPartFormDataParser';
 
 export interface ExegesisCompiledOptions {
     customFormats: CustomFormats;
@@ -32,8 +33,8 @@ export interface ExegesisCompiledOptions {
     onResponseValidationError: ResponseValidationCallback;
     validateDefaultResponses: boolean;
     allErrors: boolean;
-    paramStyle: {[style: string]: string};
-    paramExplode: {[style: string]: boolean};
+    paramStyle: { [style: string]: string };
+    paramExplode: { [style: string]: boolean };
 }
 
 const INT_32_MAX = Math.pow(2, 32) - 1;
@@ -76,12 +77,17 @@ const defaultValidators: CustomFormats = {
 
 export function compileOptions(options: ExegesisOptions = {}): ExegesisCompiledOptions {
     const maxBodySize = options.defaultMaxBodySize || 100000;
+    const uploadDir = options.uploadDir || os.tmpdir();
+    const maxFileSize = options.maxFileSize || 200 * 1024 * 1024;
 
     const mimeTypeParsers = Object.assign(
         {
             'text/*': new TextBodyParser(maxBodySize),
             'application/json': new JsonBodyParser(maxBodySize),
-            'multipart/form-data': new MultiPartFormDataParser(),
+            'multipart/form-data': new MultiPartFormDataParser({
+                maxFileSize,
+                uploadDir,
+            }),
         },
         options.mimeTypeParsers || {}
     );
@@ -100,10 +106,11 @@ export function compileOptions(options: ExegesisOptions = {}): ExegesisCompiledO
     );
     const bodyParsers = new MimeTypeRegistry<BodyParser>(wrappedBodyParsers);
 
-    const parameterParsers = new MimeTypeRegistry<StringParser>(ld.pickBy(
-        mimeTypeParsers,
-        (p: any) => !!p.parseString
-    ) as { [mimeType: string]: StringParser });
+    const parameterParsers = new MimeTypeRegistry<StringParser>(
+        ld.pickBy(mimeTypeParsers, (p: any) => !!p.parseString) as {
+            [mimeType: string]: StringParser;
+        }
+    );
 
     const customFormats = Object.assign({}, defaultValidators, options.customFormats || {});
 

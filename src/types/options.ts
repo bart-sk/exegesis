@@ -5,7 +5,7 @@ import { ResponseValidationCallback } from './validation';
 /**
  * A function which validates custom formats.
  */
-export type CustomFormatChecker =  RegExp | ((value: string) => boolean);
+export type CustomFormatChecker = RegExp | ((value: string) => boolean);
 
 export type handleErrorFunction = (err: Error) => any;
 
@@ -42,7 +42,7 @@ export interface ExegesisOptions {
      * MimeTypeParsers.  In order to be used for parsing parameters, a
      * parser must implement `parseString()`.
      */
-    mimeTypeParsers?: {[mimeType: string]: StringParser | BodyParser};
+    mimeTypeParsers?: { [mimeType: string]: StringParser | BodyParser };
 
     /**
      * A hash of authenticators.  See
@@ -159,7 +159,7 @@ export interface ExegesisOptions {
      * header: 'simple'
      */
 
-    paramStyle?: {[style: string]: string};
+    paramStyle?: { [style: string]: string };
 
     /**
      * Defaults
@@ -168,5 +168,15 @@ export interface ExegesisOptions {
      * cookie: true,
      * header: false
      */
-    paramExplode?: {[style: string]: boolean};
+    paramExplode?: { [style: string]: boolean };
+
+    /**
+     * Path to tmp upload dir for MultipartFormData
+     */
+    uploadDir?: string;
+
+    /**
+     * Max file size for MultipartFormDataParser
+     */
+    maxFileSize?: number;
 }
