@@ -202,3 +202,11 @@ If set, then when encountering a validation error Exegesis will return
 all errors found in the document, instead of just the first error.  This
 causes Exegesis to spend more time on requests with errors in them, so
 for performance reasons this is disabled by default.
+
+## uploadDir
+
+If set, then default upload directory will be set in `MultiPartFormParser` (formidable)
+
+## maxFileSize
+
+If set, then default file size will be chnaged in `MultiPartFormParser` (formidable)
