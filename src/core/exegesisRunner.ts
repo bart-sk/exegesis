@@ -204,7 +204,7 @@ export default async function generateExegesisRunner<T>(
                                     context
                                 });
                             }
-                        } catch(err) {
+                        } catch(err: any) {
                             err.status = err.status || 500;
                             throw err;
                         }
@@ -218,7 +218,7 @@ export default async function generateExegesisRunner<T>(
 
             return result;
 
-        } catch (err) {
+        } catch (err: any) {
             if(options.autoHandleHttpErrors) {
                 if (options.autoHandleHttpErrors instanceof Function) {
                     return options.autoHandleHttpErrors(err);

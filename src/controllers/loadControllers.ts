@@ -48,7 +48,7 @@ export function loadControllersSync(
                     const indexFolder = controllerName.slice(0, -(ext.length + basename.length + 1));
                     result[indexFolder] = result[indexFolder] || mod;
                 }
-            } catch(err) {
+            } catch(err: any) {
                 throw new Error(`Could not load controller '${fullPath}': ${err.message}`);
             }
             return result;
