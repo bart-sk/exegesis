@@ -87,6 +87,7 @@ export function compileOptions(options: ExegesisOptions = {}): ExegesisCompiledO
             'multipart/form-data': new MultiPartFormDataParser({
                 maxFileSize,
                 uploadDir,
+                multiples: true,
             }),
         },
         options.mimeTypeParsers || {}

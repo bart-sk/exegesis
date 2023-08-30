@@ -11,13 +11,15 @@ export default class MultiPartFormDataParser implements BodyParser {
     }
 
     parseReq(req: http.IncomingMessage, _res: http.ServerResponse, done: Callback<void>): void {
-
         const options: MultipartFormDataOptions = {};
         if (this._options.maxFileSize) {
             options.maxFileSize = this._options.maxFileSize;
         }
         if (this._options.uploadDir) {
             options.uploadDir = this._options.uploadDir;
+        }
+        if (this._options.multiples) {
+            options.multiples = true;
         }
         const parser = new IncomingForm(options);
 
@@ -33,4 +35,5 @@ export default class MultiPartFormDataParser implements BodyParser {
 type MultipartFormDataOptions = {
     uploadDir?: string;
     maxFileSize?: number;
+    multiples?: boolean;
 };
