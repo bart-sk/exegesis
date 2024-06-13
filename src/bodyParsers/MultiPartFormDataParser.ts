@@ -11,7 +11,6 @@ export default class MultiPartFormDataParser implements BodyParser {
     }
 
     parseReq(req: http.IncomingMessage, _res: http.ServerResponse, done: Callback<void>): void {
-
         const options: MultipartFormDataOptions = {};
         if (this._options.maxFileSize) {
             options.maxFileSize = this._options.maxFileSize;
@@ -20,7 +19,6 @@ export default class MultiPartFormDataParser implements BodyParser {
             options.uploadDir = this._options.uploadDir;
         }
         const parser = new IncomingForm(options);
-
         parser.parse(req, (_err: any, _fields: any, files: any) => {
             if (_err) {
                 return done(_err);
