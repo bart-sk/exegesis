@@ -1,0 +1,12 @@
+src
+tests
+.eslintrc.json
+.prettierrc
+.gitignore
+.npmignore
+jest.config.js
+README.md
+tsconfig.json
+yarn.lock
+docs
+.idea

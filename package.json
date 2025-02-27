@@ -1,6 +1,6 @@
 {
-    "name": "exegesis-koa",
-    "version": "0.0.0-semantic-release",
+    "name": "@bart.sk-eshop/exegesis-koa",
+    "version": "1.0.0",
     "description": "Parses OpenAPI documents",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
