@@ -34,7 +34,11 @@ export class ValidationError extends HttpBadRequestError {
         if (!Array.isArray(errors)) {
             errors = [errors];
         }
-        super(errors.length === 1 ? errors[0].message : 'Multiple validation errors');
+        super(
+            errors.length === 1
+                ? `${errors[0].ajvError?.instancePath} ${errors[0].message}`
+                : 'Multiple validation errors'
+        );
         this.errors = errors;
     }
 }
