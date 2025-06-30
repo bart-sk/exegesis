@@ -28,7 +28,7 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
     readonly openApiDoc: oas3.OpenAPIObject;
     private readonly _options: ExegesisCompiledOptions;
     private _servers?: Servers;
-    private _paths: Paths;
+    private _paths: Paths = {} as Paths;
 
     /**
      * Creates a new OpenApi object.
@@ -52,13 +52,16 @@ export default class OpenApi implements ApiInterface<OAS3ApiInfo> {
         if (!options.ignoreServers && openApiDoc.servers) {
             this._servers = new Servers(openApiDoc.servers);
         }
+    }
 
-        const exegesisController = openApiDoc[EXEGESIS_CONTROLLER];
-
-        this._paths = new Paths(
-            new Oas3CompileContext(openApiDoc, ['paths'], options),
+    public async processPaths(): Promise<void> {
+        const exegesisController = this.openApiDoc[EXEGESIS_CONTROLLER];
+        const paths = new Paths(
+            new Oas3CompileContext(this.openApiDoc, ['paths'], this._options),
             exegesisController
         );
+        await paths.processPaths();
+        this._paths = paths;
     }
 
     resolve(

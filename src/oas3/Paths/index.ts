@@ -5,6 +5,7 @@ import PathResolver from './PathResolver';
 import { EXEGESIS_CONTROLLER } from '../extensions';
 
 import { ParametersMap } from '../../types';
+import { performance } from 'perf_hooks';
 
 export interface ResolvedPath {
     path: Path;
@@ -15,24 +16,49 @@ export interface ResolvedPath {
 export default class Paths {
     private readonly _pathResolver: PathResolver<Path> = new PathResolver();
 
+    protected context: Oas3CompileContext = {} as Oas3CompileContext;
+    protected eController: string | undefined;
+
     constructor(context: Oas3CompileContext, exegesisController: string | undefined) {
-        const { openApiDoc } = context;
+        this.context = context;
+        this.eController = exegesisController;
+    }
 
-        exegesisController = openApiDoc.paths[EXEGESIS_CONTROLLER] || exegesisController;
-        for (const path of Object.keys(openApiDoc.paths)) {
-            const pathObject = new Path(
-                context.childContext(path),
-                openApiDoc.paths[path],
-                exegesisController
+    static async measureExecutionTimeWithPerformance<T>(
+        func: () => T,
+        name: string = ''
+    ): Promise<T> {
+        const start = performance.now(); // Start time
+        const result = await func(); // Execute the function
+        const end = performance.now(); // End time
+        console.log(`[${name}][Execution time][${(end - start).toFixed(3)}] ms`);
+        return result;
+    }
+
+    public async processPaths() {
+        const { openApiDoc } = this.context;
+        const exegesisController = openApiDoc.paths[EXEGESIS_CONTROLLER] || this.eController;
+
+        await Paths.measureExecutionTimeWithPerformance(async () => {
+            await Promise.all(
+                Object.keys(openApiDoc.paths).map(async (path) => {
+                    const pathObject = new Path(
+                        this.context.childContext(path),
+                        openApiDoc.paths[path],
+                        exegesisController
+                    );
+
+                    await pathObject.parse(openApiDoc.paths[path]);
+
+                    if (isSpecificationExtension(path)) {
+                        // Skip extentions
+                        return null;
+                    }
+                    this._pathResolver.registerPath(path, pathObject);
+                    return null;
+                })
             );
-
-            if (isSpecificationExtension(path)) {
-                // Skip extentions
-                continue;
-            }
-
-            this._pathResolver.registerPath(path, pathObject);
-        }
+        });
     }
 
     /**
