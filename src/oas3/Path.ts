@@ -47,20 +47,6 @@ export default class Path {
             (p, i) => new Parameter(this.context.childContext(['parameters', '' + i]), p)
         );
         const ops = Object.create(null);
-
-        // for( const method of HTTP_METHODS) {
-        // const operation = oaPath[method];
-        //     if (operation) {
-        //         ops[method] = new Operation(
-        //           this.context.childContext(method),
-        //           operation,
-        //           oaPath,
-        //           method,
-        //           this.eController,
-        //           parameters
-        //         );
-        //     }
-        // }
         await Promise.all(
             HTTP_METHODS.map(async (method) => {
                 const operation = oaPath[method];

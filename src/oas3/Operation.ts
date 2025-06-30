@@ -189,11 +189,7 @@ export default class Operation {
                 localParameters.push(param);
             })
         );
-        //
-        // const localParameters = (this.oaOperation.parameters || []).map(
-        //   (parameter, index) =>
-        //     new Parameter(this.context.childContext(['parameters', '' + index]), parameter)
-        // );
+
         const allParameters = parentParameters.concat(localParameters);
 
         this._parameters = allParameters.reduce(

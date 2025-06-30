@@ -140,12 +140,10 @@ export function compileRunner(
 ): Promise<ExegesisRunner> {
     return pb.addCallback(done, async () => {
         options = options || {};
-        console.log('PRE DEPENDENCIES');
         const { compiledOptions, apiInterface, plugins } = await compileDependencies(
             openApiDoc,
             options
         );
-        console.log('POST DEPENDENCIES');
         return generateExegesisRunner(apiInterface, {
             autoHandleHttpErrors: compiledOptions.autoHandleHttpErrors,
             plugins,
