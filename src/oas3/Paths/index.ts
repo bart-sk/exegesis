@@ -5,7 +5,6 @@ import PathResolver from './PathResolver';
 import { EXEGESIS_CONTROLLER } from '../extensions';
 
 import { ParametersMap } from '../../types';
-import { performance } from 'perf_hooks';
 
 export interface ResolvedPath {
     path: Path;
