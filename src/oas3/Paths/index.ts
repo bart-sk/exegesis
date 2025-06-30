@@ -24,41 +24,27 @@ export default class Paths {
         this.eController = exegesisController;
     }
 
-    static async measureExecutionTimeWithPerformance<T>(
-        func: () => T,
-        name: string = ''
-    ): Promise<T> {
-        const start = performance.now(); // Start time
-        const result = await func(); // Execute the function
-        const end = performance.now(); // End time
-        console.log(`[${name}][Execution time][${(end - start).toFixed(3)}] ms`);
-        return result;
-    }
-
     public async processPaths() {
         const { openApiDoc } = this.context;
         const exegesisController = openApiDoc.paths[EXEGESIS_CONTROLLER] || this.eController;
+g        await Promise.all(
+            Object.keys(openApiDoc.paths).map(async (path) => {
+                const pathObject = new Path(
+                    this.context.childContext(path),
+                    openApiDoc.paths[path],
+                    exegesisController
+                );
 
-        await Paths.measureExecutionTimeWithPerformance(async () => {
-            await Promise.all(
-                Object.keys(openApiDoc.paths).map(async (path) => {
-                    const pathObject = new Path(
-                        this.context.childContext(path),
-                        openApiDoc.paths[path],
-                        exegesisController
-                    );
+                await pathObject.parse(openApiDoc.paths[path]);
 
-                    await pathObject.parse(openApiDoc.paths[path]);
-
-                    if (isSpecificationExtension(path)) {
-                        // Skip extentions
-                        return null;
-                    }
-                    this._pathResolver.registerPath(path, pathObject);
+                if (isSpecificationExtension(path)) {
+                    // Skip extentions
                     return null;
-                })
-            );
-        });
+                }
+                this._pathResolver.registerPath(path, pathObject);
+                return null;
+            })
+        );
     }
 
     /**
