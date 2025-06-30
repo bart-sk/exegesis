@@ -27,7 +27,7 @@ export default class Paths {
     public async processPaths() {
         const { openApiDoc } = this.context;
         const exegesisController = openApiDoc.paths[EXEGESIS_CONTROLLER] || this.eController;
-g        await Promise.all(
+        await Promise.all(
             Object.keys(openApiDoc.paths).map(async (path) => {
                 const pathObject = new Path(
                     this.context.childContext(path),
