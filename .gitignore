@@ -1,11 +1,15 @@
 node_modules
 /notes.md
+/lib
 /types
 /.nyc_output
 /coverage
 /npm-debug.log
 /yarn-error.log
+/yarn.lock
 /package.lock
 .DS_Store
 .idea
-/yarn.lock
+
+# Artifacts from IDEs, etc.:
+/.vscode/snipsnap.code-snippets
