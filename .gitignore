@@ -6,7 +6,6 @@ node_modules
 /coverage
 /npm-debug.log
 /yarn-error.log
-/yarn.lock
 /package.lock
 .DS_Store
 .idea
