@@ -67,6 +67,7 @@ const defaultValidators: CustomFormats = {
     time: ajvFormats.get('time') as StringCustomFormatChecker,
     'date-time': ajvFormats.get('date-time') as StringCustomFormatChecker,
     duration: ajvFormats.get('duration') as RegExp,
+    uuid: ajvFormats.get('uuid') as StringCustomFormatChecker,
 };
 
 export function compileOptions(options: ExegesisOptions = {}): ExegesisCompiledOptions {
