@@ -34,11 +34,22 @@ export class ValidationError extends HttpBadRequestError {
         if (!Array.isArray(errors)) {
             errors = [errors];
         }
-        super(
-            errors.length === 1
-                ? `${errors[0].ajvError?.instancePath} ${errors[0].message}`
-                : 'Multiple validation errors'
-        );
+
+        let message: string;
+        if (errors.length === 1) {
+            const error = errors[0];
+            const locationInfo = error.location
+                ? `${error.location.in}${
+                      error.location.name ? ` parameter "${error.location.name}"` : ''
+                  }`
+                : 'unknown location';
+            const pathInfo = error.location?.path ? ` at path "${error.location.path}"` : '';
+            message = `Validation failed for ${locationInfo}${pathInfo}: ${error.message}`;
+        } else {
+            message = `Multiple validation errors (${errors.length} errors)`;
+        }
+
+        super(message);
         this.errors = errors;
     }
 }

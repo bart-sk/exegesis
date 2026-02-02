@@ -163,8 +163,35 @@ function doValidate(
                     pathPtr = pathPtr.slice(6);
                 }
 
+                // Create a more detailed error message that includes location information
+                let detailedMessage = err.message || 'Unspecified error';
+
+                // Add keyword information for better context
+                if (err.keyword) {
+                    detailedMessage = `${err.keyword}: ${detailedMessage}`;
+                }
+
+                // Add schema path information for debugging
+                let schemaLocation = '';
+                if (err.schemaPath) {
+                    let schemaPathPtr = err.schemaPath;
+                    // Remove the /properties/value prefix from schema path like we do for instance path
+                    if (schemaPathPtr.startsWith('#/properties/value/')) {
+                        schemaPathPtr = '#/' + schemaPathPtr.slice(19);
+                    }
+                    schemaLocation = ` (schema path: ${schemaPathPtr})`;
+                }
+
+                // Add parameter information if available
+                if (err.params && Object.keys(err.params).length > 0) {
+                    const paramInfo = Object.entries(err.params)
+                        .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+                        .join(', ');
+                    detailedMessage += ` [${paramInfo}]`;
+                }
+
                 return {
-                    message: err.message || 'Unspecified error',
+                    message: `${detailedMessage}${schemaLocation}`,
                     location: {
                         in: parameterLocation.in,
                         name: parameterLocation.name,
@@ -240,6 +267,7 @@ function generateValidator(
         removeAdditional: allowTypeCoercion ? 'failing' : false,
         allErrors: schemaContext.options.allErrors,
         strict: schemaContext.options.strictValidation,
+        verbose: true,
     });
 
     for (const key of Object.keys(customFormats)) {
