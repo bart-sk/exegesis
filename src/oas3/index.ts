@@ -15,5 +15,7 @@ export async function compile(
     openApiDoc: oas3.OpenAPIObject,
     options: ExegesisCompiledOptions
 ): Promise<OpenApi> {
-    return new OpenApi(openApiDoc, options);
+    const api = new OpenApi(openApiDoc, options);
+    await api.processPaths();
+    return api;
 }

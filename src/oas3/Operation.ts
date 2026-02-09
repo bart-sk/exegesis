@@ -97,7 +97,7 @@ export default class Operation {
     readonly exegesisController: string | undefined;
     readonly operationId: string | undefined;
     readonly securityRequirements: oas3.SecurityRequirementObject[];
-    readonly parameterLocations: ParameterLocations;
+    public parameterLocations: ParameterLocations = {} as ParameterLocations;
 
     /**
      * If this operation has a `requestBody`, this is a list of content-types
@@ -109,8 +109,14 @@ export default class Operation {
     readonly bodyRequired: boolean;
 
     private readonly _requestBodyContentTypes: MimeTypeRegistry<RequestMediaType>;
-    private readonly _parameters: ParametersByLocation<Parameter[]>;
-    private readonly _responses: Responses;
+    private _parameters: ParametersByLocation<Parameter[]> = {
+        query: [],
+        header: [],
+        path: [],
+        server: [],
+        cookie: [],
+    } as ParametersByLocation<Parameter[]>;
+    private readonly _responses: Responses = {} as Responses;
     private readonly _securitySchemes: SecuritySchemes;
 
     constructor(
@@ -118,8 +124,7 @@ export default class Operation {
         oaOperation: oas3.OperationObject,
         oaPath: oas3.PathItemObject,
         method: string,
-        exegesisController: string | undefined,
-        parentParameters: Parameter[]
+        exegesisController: string | undefined
     ) {
         this.context = context;
         this.oaOperation = oaOperation;
@@ -131,7 +136,12 @@ export default class Operation {
 
         this._securitySchemes = new SecuritySchemes(context.openApiDoc);
 
-        this._responses = new Responses(context.childContext('responses'), oaOperation.responses);
+        if (context.options.parseResponseBody) {
+            this._responses = new Responses(
+                context.childContext('responses'),
+                oaOperation.responses
+            );
+        }
 
         for (const securityRequirement of this.securityRequirements) {
             for (const schemeName of Object.keys(securityRequirement)) {
@@ -166,11 +176,20 @@ export default class Operation {
             this._requestBodyContentTypes = new MimeTypeRegistry<RequestMediaType>();
             this.bodyRequired = false;
         }
+    }
 
-        const localParameters = (this.oaOperation.parameters || []).map(
-            (parameter, index) =>
-                new Parameter(context.childContext(['parameters', '' + index]), parameter)
+    public async parseParams(parentParameters: Parameter[]) {
+        const localParameters: Parameter[] = [];
+        await Promise.all(
+            (this.oaOperation.parameters || []).map(async (parameter, index) => {
+                const param = new Parameter(
+                    this.context.childContext(['parameters', '' + index]),
+                    parameter
+                );
+                localParameters.push(param);
+            })
         );
+
         const allParameters = parentParameters.concat(localParameters);
 
         this._parameters = allParameters.reduce(
@@ -218,7 +237,6 @@ export default class Operation {
         queryString: string | undefined;
     }): ParametersByLocation<ParametersMap<any>> {
         const { headers, rawPathParams, queryString } = params;
-
         return {
             query: parseQueryParameters(this._parameters.query, queryString),
             header: parseParameterGroup(this._parameters.header, headers || {}),
@@ -265,12 +283,14 @@ export default class Operation {
         response: ExegesisResponse,
         validateDefaultResponses: boolean
     ): ResponseValidationResult {
-        return this._responses.validateResponse(
-            response.statusCode,
-            response.headers,
-            response.body,
-            validateDefaultResponses
-        );
+        return this._responses && Object.keys(this._responses).length > 0
+            ? this._responses.validateResponse(
+                  response.statusCode,
+                  response.headers,
+                  response.body,
+                  validateDefaultResponses
+              )
+            : { errors: null, isDefault: false };
     }
 
     private async _runAuthenticator(

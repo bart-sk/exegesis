@@ -15,24 +15,35 @@ export interface ResolvedPath {
 export default class Paths {
     private readonly _pathResolver: PathResolver<Path> = new PathResolver();
 
+    protected context: Oas3CompileContext = {} as Oas3CompileContext;
+    protected eController: string | undefined;
+
     constructor(context: Oas3CompileContext, exegesisController: string | undefined) {
-        const { openApiDoc } = context;
+        this.context = context;
+        this.eController = exegesisController;
+    }
 
-        exegesisController = openApiDoc.paths[EXEGESIS_CONTROLLER] || exegesisController;
-        for (const path of Object.keys(openApiDoc.paths)) {
-            const pathObject = new Path(
-                context.childContext(path),
-                openApiDoc.paths[path],
-                exegesisController
-            );
+    public async processPaths() {
+        const { openApiDoc } = this.context;
+        const exegesisController = openApiDoc.paths[EXEGESIS_CONTROLLER] || this.eController;
+        await Promise.all(
+            Object.keys(openApiDoc.paths).map(async (path) => {
+                const pathObject = new Path(
+                    this.context.childContext(path),
+                    openApiDoc.paths[path],
+                    exegesisController
+                );
 
-            if (isSpecificationExtension(path)) {
-                // Skip extentions
-                continue;
-            }
+                await pathObject.parse(openApiDoc.paths[path]);
 
-            this._pathResolver.registerPath(path, pathObject);
-        }
+                if (isSpecificationExtension(path)) {
+                    // Skip extentions
+                    return null;
+                }
+                this._pathResolver.registerPath(path, pathObject);
+                return null;
+            })
+        );
     }
 
     /**
