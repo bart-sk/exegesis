@@ -200,4 +200,10 @@ export interface ExegesisOptions {
      * Max file size for MultipartFormDataParser
      */
     maxFileSize?: number;
+
+    /**
+     * If false, then Exegesis will not parse responses from OpenAPI doc.
+     * Meaning that it will not validate response schemas.
+     */
+    parseResponses?: boolean;
 }

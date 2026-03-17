@@ -6,7 +6,7 @@ import { MimeTypeRegistry } from './utils/mime';
 import TextBodyParser from './bodyParsers/TextBodyParser';
 import JsonBodyParser from './bodyParsers/JsonBodyParser';
 import BodyParserWrapper from './bodyParsers/BodyParserWrapper';
-import { loadControllersSync } from './controllers/loadControllers';
+import { loadControllersASync } from './controllers/loadControllers';
 import {
     Authenticators,
     BodyParser,
@@ -43,6 +43,7 @@ export interface ExegesisCompiledOptions {
     lazyCompileValidationSchemas: boolean;
     paramStyle: { [style: string]: string };
     paramExplode: { [style: string]: boolean };
+    parseResponseBody: boolean;
 }
 
 // See the OAS 3.0 specification for full details about supported formats:
@@ -67,9 +68,12 @@ const defaultValidators: CustomFormats = {
     time: ajvFormats.get('time') as StringCustomFormatChecker,
     'date-time': ajvFormats.get('date-time') as StringCustomFormatChecker,
     duration: ajvFormats.get('duration') as RegExp,
+    uuid: ajvFormats.get('uuid') as StringCustomFormatChecker,
 };
 
-export function compileOptions(options: ExegesisOptions = {}): ExegesisCompiledOptions {
+export async function compileOptions(
+    options: ExegesisOptions = {}
+): Promise<ExegesisCompiledOptions> {
     const maxBodySize = options.defaultMaxBodySize || 100000;
     const uploadDir = options.uploadDir || os.tmpdir();
     const maxFileSize = options.maxFileSize || 200 * 1024 * 1024;
@@ -111,7 +115,7 @@ export function compileOptions(options: ExegesisOptions = {}): ExegesisCompiledO
     const contollersPattern = options.controllersPattern || '**/*.js';
     const controllers =
         typeof options.controllers === 'string'
-            ? loadControllersSync(options.controllers, contollersPattern)
+            ? await loadControllersASync(options.controllers, contollersPattern)
             : options.controllers || {};
 
     const allowMissingControllers =
@@ -149,5 +153,6 @@ export function compileOptions(options: ExegesisOptions = {}): ExegesisCompiledO
         lazyCompileValidationSchemas: options.lazyCompileValidationSchemas ?? false,
         paramStyle: options.paramStyle || {},
         paramExplode: options.paramExplode || {},
+        parseResponseBody: options.parseResponses ?? true,
     };
 }

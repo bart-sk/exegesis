@@ -24,7 +24,8 @@ interface OperationsMap {
 export default class Path {
     readonly context: Oas3CompileContext;
     readonly oaPath: oas3.PathItemObject;
-    private readonly _operations: OperationsMap;
+    private _operations: OperationsMap = Object.create(null);
+    protected eController: string | undefined;
 
     constructor(
         context: Oas3CompileContext,
@@ -37,25 +38,32 @@ export default class Path {
         } else {
             this.oaPath = oaPath;
         }
-        const parameters = (oaPath.parameters || []).map(
-            (p, i) => new Parameter(context.childContext(['parameters', '' + i]), p)
-        );
-
         exegesisController = oaPath[EXEGESIS_CONTROLLER] || exegesisController;
-        this._operations = HTTP_METHODS.reduce((result: OperationsMap, method) => {
-            const operation = oaPath[method];
-            if (operation) {
-                result[method] = new Operation(
-                    context.childContext(method),
-                    operation,
-                    oaPath,
-                    method,
-                    exegesisController,
-                    parameters
-                );
-            }
-            return result;
-        }, Object.create(null));
+        this.eController = exegesisController;
+    }
+
+    public async parse(oaPath: oas3.PathItemObject) {
+        const parameters = (oaPath.parameters || []).map(
+            (p, i) => new Parameter(this.context.childContext(['parameters', '' + i]), p)
+        );
+        const ops = Object.create(null);
+        await Promise.all(
+            HTTP_METHODS.map(async (method) => {
+                const operation = oaPath[method];
+                if (operation) {
+                    const op = new Operation(
+                        this.context.childContext(method),
+                        operation,
+                        oaPath,
+                        method,
+                        this.eController
+                    );
+                    await op.parseParams(parameters);
+                    ops[method] = op;
+                }
+            })
+        );
+        this._operations = ops;
     }
 
     getOperation(method: string): Operation | undefined {

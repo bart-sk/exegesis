@@ -32,7 +32,6 @@ export * from './types';
  */
 function bundle(openApiDocFile: string | unknown): Promise<any> {
     const refParser = new $RefParser();
-
     return refParser.bundle(openApiDocFile as any, { dereference: { circular: 'ignore' } });
 }
 
@@ -40,15 +39,29 @@ async function compileDependencies(
     openApiDoc: string | oas3.OpenAPIObject,
     options: ExegesisOptions
 ) {
-    const compiledOptions = compileOptions(options);
+    // const bundledDocFilePath =  options.developmentCaches ? `${options.developmentCaches}/bundledDoc.json` : null;
+    // const lastBundledLockFilePath = options.developmentCaches ? `${options.developmentCaches}/bundledDoc.lock` : null;
+    // if(bundledDocFilePath && lastBundledLockFilePath) {
+    //     if(fs.existsSync(bundledDocFilePath)) {
+    //       const lastBundledLock = fs.existsSync(lastBundledLockFilePath) ? fs.readFileSync(lastBundledLockFilePath, 'utf8') : null;
+    //         console.log('Using cached bundledDoc.json');
+    //         bundledDoc = JSON.parse(fs.readFileSync(bundledDocFilePath, 'utf8'));
+    //     }
+    // }
+
+    // console.log('Bundling OpenAPI document...');
+    // if(!bundledDoc) {
     const bundledDoc = await bundle(openApiDoc);
+    //     if(bundledDocFilePath && lastBundledLockFilePath){
+    //         await fs.promises.writeFile(bundledDocFilePath, JSON.stringify(bundledDoc, null, 2));
+    //         await fs.promises.writeFile(lastBundledLockFilePath, moment().format('YYYY-MM-DD HH:mm:ss'))
+    //     }
+    // }
 
+    const compiledOptions = await compileOptions(options);
     const plugins = new PluginsManager(bundledDoc, (options || {}).plugins || []);
-
     await plugins.preCompile({ apiDoc: bundledDoc, options });
-
     const apiInterface = await compileOpenApi(bundledDoc as OpenAPIObject, compiledOptions);
-
     return { compiledOptions, apiInterface, plugins };
 }
 
@@ -212,7 +225,6 @@ export function compileApi(
 ) {
     return pb.addCallback(done, async () => {
         const runner = await compileRunner(openApiDoc, options);
-
         return async function exegesisMiddleware(ctx: KoaContext, next?: Callback<void>) {
             const result = await runner(ctx.req, ctx.res, ctx);
             if (!result) {
