@@ -1,5 +1,5 @@
 {
-    "name": "@bart.sk-eshop/exegesis-koa",
+    "name": "@bart.sk/exegesis-koa",
     "version": "2.0.0",
     "description": "Parses OpenAPI documents",
     "main": "lib/index.js",
