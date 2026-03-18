@@ -1,5 +1,5 @@
 {
-    "name": "@bart.sk/exegesis-koa",
+    "name": "@crossuite/exegesis",
     "version": "2.0.0",
     "description": "Parses OpenAPI documents",
     "main": "lib/index.js",
