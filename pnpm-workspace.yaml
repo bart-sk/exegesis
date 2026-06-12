@@ -1,0 +1,10 @@
+minimumReleaseAge: 7200 # 5 days
+blockExoticSubdeps: true
+trustPolicy: no-downgrade
+trustPolicyIgnoreAfter: 43800 # 1 month
+minimumReleaseAgeExclude:
+  - '@bart.sk-eshop/*'
+  - '@bart.sk-ecommerce/*'
+trustPolicyExclude:
+  - '@bart.sk-eshop/*'
+  - '@bart.sk-ecommerce/*'
