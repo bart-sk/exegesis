@@ -1,6 +1,6 @@
 {
     "name": "@bart.sk-eshop/exegesis-koa",
-    "version": "3.0.0",
+    "version": "3.0.1-rc.0",
     "description": "Parses OpenAPI documents",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
