@@ -1,3 +1,8 @@
+overrides:
+  brace-expansion: '^5.0.9'
+  js-yaml: '^4.3.0'
+  fast-uri: '^3.1.5'
+
 minimumReleaseAge: 7200 # 5 days
 blockExoticSubdeps: true
 trustPolicy: no-downgrade
@@ -5,6 +10,8 @@ trustPolicyIgnoreAfter: 43800 # 1 month
 minimumReleaseAgeExclude:
   - '@bart.sk-eshop/*'
   - '@bart.sk-ecommerce/*'
+  # security patch (GHSA-7p8r-x3mc-p8w7) newer than the age cutoff; remove once aged out
+  - 'fast-uri'
 trustPolicyExclude:
   - '@bart.sk-eshop/*'
   - '@bart.sk-ecommerce/*'
