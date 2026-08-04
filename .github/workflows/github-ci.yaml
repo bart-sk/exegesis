@@ -6,16 +6,18 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [24.x]
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - name: Setup Node ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm install
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
       - name: test
-        run: npm test
+        run: pnpm test
   #      - name: Coveralls
   #        uses: coverallsapp/github-action@master
   #        with:
@@ -26,13 +28,15 @@ jobs:
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/koa'
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: lts/*
-      - run: npm install
+          node-version: 24.x
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
       - name: semantic-release
-        run: npm run semantic-release
+        run: pnpm run semantic-release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

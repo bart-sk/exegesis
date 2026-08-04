@@ -7,6 +7,6 @@ tests
 jest.config.js
 README.md
 tsconfig.json
-yarn.lock
+pnpm-lock.yaml
 docs
 .idea
